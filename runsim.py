@@ -56,7 +56,7 @@ matches = [None] * 63
 predictor_coefficients = []
 all_csv_rows = []
 teams = []
-with open('settings.csv', newline='') as csvfile:
+with open('settings.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 
     first_row = next(csv_reader)
@@ -135,6 +135,8 @@ with open('settings.csv', newline='') as csvfile:
         print("Winning round 4:\t"+str(team.num_round4_wins/num_runs))
         print("Winning round 5:\t"+str(team.num_round5_wins/num_runs))
         print("Winning Championship:\t"+str(team.num_championship_wins/num_runs))
+
+    raw_input()
 
 
 
