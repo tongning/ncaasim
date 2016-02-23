@@ -52,7 +52,7 @@ class Match:
                 str(self.probability_team_one_wins)+"\nWinner is: "+str(self.winner)+"\n"
 
 
-num_runs = 1000
+num_runs = 1
 
 matches = [None] * 63
 predictor_coefficients = []
@@ -109,6 +109,7 @@ with open('settings.csv', 'r') as csvfile:
             matches[idx].winner.num_round2_wins += 1
             #print(matches[idx])
 
+
         # Run through third round matches, # 48-55
         for idx in range(48, 56):
             matches[idx] = Match(matches[2*idx-64].winner, matches[2*idx-64+1].winner)
@@ -133,7 +134,13 @@ with open('settings.csv', 'r') as csvfile:
             matches[idx].winner.num_championship_wins += 1
             #print(matches[idx])
 
+    with open('out.csv', "w", newline='') as out_file:
+        writer = csv.writer(out_file, delimiter=',')
+        for team in teams:
+            writer.writerow([team, str(team.num_round1_wins/num_runs),str(team.num_round2_wins/num_runs),str(team.num_round3_wins/num_runs),str(team.num_round4_wins/num_runs),str(team.num_round5_wins/num_runs),str(team.num_championship_wins/num_runs)])
     # Print results for each team
+    for match in matches:
+        print(match)
     for team in teams:
         print(team)
 
