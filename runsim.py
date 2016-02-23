@@ -42,6 +42,8 @@ class Match:
             self.winner = self.team1
         else:
             self.winner = self.team2
+        #print(str(self))
+
 
     def __str__(self):
         if not self.winner:
@@ -88,7 +90,7 @@ with open('settings.csv', 'r') as csvfile:
         new_team = Team(team_name, team_predictor_values)
         teams.append(new_team)
 
-    for i in range(num_runs):
+    for j in range(num_runs):
         # Run through first round matches, # 0-31
         team1_idx = 0
         team2_idx = 1
@@ -96,34 +98,40 @@ with open('settings.csv', 'r') as csvfile:
         while team2_idx < len(teams):
             matches[match_num] = Match(teams[team1_idx], teams[team2_idx])
             matches[match_num].winner.num_round1_wins += 1
+            #print(matches[match_num])
             team1_idx += 2
             team2_idx += 2
             match_num += 1
 
         # Run through second round matches, # 32-47
-        for idx in range(32, 47):
+        for idx in range(32, 48):
             matches[idx] = Match(matches[2*idx-64].winner, matches[2*idx-64+1].winner)
             matches[idx].winner.num_round2_wins += 1
+            #print(matches[idx])
 
         # Run through third round matches, # 48-55
-        for idx in range(48, 55):
+        for idx in range(48, 56):
             matches[idx] = Match(matches[2*idx-64].winner, matches[2*idx-64+1].winner)
             matches[idx].winner.num_round3_wins += 1
+            #print(matches[idx])
 
         # Run through fourth round matches, # 56-59
-        for idx in range(56, 59):
+        for idx in range(56, 60):
             matches[idx] = Match(matches[2*idx-64].winner, matches[2*idx-64+1].winner)
             matches[idx].winner.num_round4_wins += 1
+            #print(matches[idx])
 
         # 60 and 61
-        for idx in range(60, 61):
+        for idx in range(60, 62):
             matches[idx] = Match(matches[2*idx-64].winner, matches[2*idx-64+1].winner)
             matches[idx].winner.num_round5_wins +=1
+            #print(matches[idx])
 
         # Championship, # 62
-        for idx in range(62, 62):
+        for idx in range(62, 63):
             matches[idx] = Match(matches[2*idx-64].winner, matches[2*idx-64+1].winner)
             matches[idx].winner.num_championship_wins += 1
+            #print(matches[idx])
 
     # Print results for each team
     for team in teams:
@@ -136,7 +144,8 @@ with open('settings.csv', 'r') as csvfile:
         print("Winning round 5:\t"+str(team.num_round5_wins/num_runs))
         print("Winning Championship:\t"+str(team.num_championship_wins/num_runs))
 
-    raw_input()
+    #for match in matches:
+    #    print(match)
 
 
 
