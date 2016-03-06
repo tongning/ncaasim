@@ -3,6 +3,7 @@ import csv
 import math
 import random
 import sys
+import itertools
 
 
 class Team:
@@ -64,6 +65,7 @@ matches = [None] * 63
 predictor_coefficients = []
 all_csv_rows = []
 teams = []
+non_playing_teams = []
 with open('settings.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 
@@ -87,12 +89,16 @@ with open('settings.csv', 'r') as csvfile:
     next(csv_reader)
 
     # Create team objects
-
+    finished_bracket_teams = False
     while True:
         try:
             team_row = next(csv_reader)
         except StopIteration:
             break
+
+        if team_row[0] == 'Not on bracket':
+            finished_bracket_teams = True
+            continue
 
         team_name = team_row[1]
         team_known_wins = int(team_row[2])
@@ -103,7 +109,10 @@ with open('settings.csv', 'r') as csvfile:
             column_num += 1
 
         new_team = Team(team_name, team_predictor_values, team_known_wins)
-        teams.append(new_team)
+        if not finished_bracket_teams:
+            teams.append(new_team)
+        else:
+            non_playing_teams.append(new_team)
 
     # Error check
     # Make sure "Round of" value is valid - 64, 32, 16, 8, or 2
@@ -209,7 +218,7 @@ with open('settings.csv', 'r') as csvfile:
 
         # Championship, # 62
         for idx in range(62, 63):
-            # Does either team already have 5 or more wins so far?
+            # Does either team already have 6 or more wins so far?
             # If so, they've already won championship match; force winner
             if matches[2*idx-64].winner.known_wins >= 6:
                 matches[idx] = Match(matches[2*idx-64].winner, matches[2*idx-64+1].winner, matches[2*idx-64].winner)
@@ -226,6 +235,22 @@ with open('settings.csv', 'r') as csvfile:
             writer.writerow([team, str(team.num_round1_wins/num_runs), str(team.num_round2_wins/num_runs),
                              str(team.num_round3_wins/num_runs), str(team.num_round4_wins/num_runs),
                              str(team.num_round5_wins/num_runs), str(team.num_championship_wins/num_runs)])
+
+    # Generate all possible pairings
+    # Join the non-playing teams into the teams list
+    teams = teams + non_playing_teams
+    combinations = itertools.combinations(teams, 2)
+    all_matches = []
+    for combination in combinations:
+        all_matches.append(Match(combination[0], combination[1]))
+
+    with open('all_matches.csv', "w", newline='') as out_file:
+        writer = csv.writer(out_file, delimiter=',')
+        writer.writerow(["First team", "Second team", "Probability First Team Wins"])
+        for match in all_matches:
+            writer.writerow([match.team1, match.team2, match.probability_team_one_wins])
+
+
     # Print results for each team
     for match in matches:
         print(match)
