@@ -89,6 +89,7 @@ def main():
     # http://stackoverflow.com/questions/14879916/python-tkinter-make-any-output-appear-in-a-text-box-on-gui-not-in-the-shell
 
     top = tk.Tk()
+    top.resizable(width='FALSE', height='FALSE')
     top.wm_title("ncaasim")
     tex = tk.Text(master=top)
     tex.pack(side=tk.RIGHT)
