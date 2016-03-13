@@ -36,6 +36,31 @@ class Team:
     def __str__(self):
         return self.name
 
+class safe: # the decorator
+    def __init__(self, function):
+        self.function = function
+
+    def __call__(self, *args):
+        try:
+            return self.function(*args)
+        except Exception as e:
+            # make a popup here with your exception information.
+            # might want to use traceback module to parse the exception info
+            friendly_error = '''
+        Oops! Program encountered the following error:
+            '''
+            friendly_error += str(e)
+            friendly_error += '''
+
+        Troubleshooting tips:
+        * For "Permission Denied" errors, please close all input and output
+          files and try again
+        * For other errors, check your settings.csv file, and make sure it
+          is saved in CSV (not Excel) format.
+            '''
+            tex.insert(tk.END, friendly_error)
+            tex.see(tk.END)             # Scroll if necessary
+            top.update_idletasks()
 
 class Match:
 
@@ -99,16 +124,7 @@ def callback(tex, newtext):
     tex.see(tk.END)             # Scroll if necessary
 
 def main():
-    # GUI code
-    # http://stackoverflow.com/questions/14879916/python-tkinter-make-any-output-appear-in-a-text-box-on-gui-not-in-the-shell
 
-    top = tk.Tk()
-    top.resizable(width='FALSE', height='FALSE')
-    top.wm_title("ncaasim")
-    tex = tk.Text(master=top)
-    tex.pack(side=tk.RIGHT)
-    bop = tk.Frame()
-    bop.pack(side=tk.LEFT)
 
     b = tk.Button(bop, text='Run', command=lambda: runcalcs(tex, top))
     welcome = '''
@@ -124,10 +140,7 @@ def main():
     =========================================================================
     * Before you begin, ensure you have your inputs saved in settings.csv, and
       that settings.csv is stored in the same folder as this program.
-    * Click Run to launch.
-
-
-    '''
+    * Click Run to launch.\n'''
 
     tex.insert(tk.END, welcome)
     tex.see(tk.END)             # Scroll if necessary
@@ -138,9 +151,12 @@ def main():
     top.mainloop()
 
 
-
+@safe
 def runcalcs(tex, top):
-    tex.insert(tk.END, "Running...")
+    running_message = '''
+    Running...
+    '''
+    tex.insert(tk.END, running_message)
     tex.see(tk.END)             # Scroll if necessary
     top.update_idletasks()
     global constant
@@ -175,7 +191,7 @@ def runcalcs(tex, top):
             else:
                 # Pass a dictionary defining the proper constant to add to y-hat for each possible difference, rather
                 # than a coefficient to multiply the difference by
-            
+
                 level_diff_dict = {}
                 # Read horizontally in column until no more level-constant pairs can be found
                 col_index = 1
@@ -373,12 +389,24 @@ def runcalcs(tex, top):
         finishtext = '''
         Finished!
         * Probabilities of progression have been saved to out.csv
-        * Probabilities of all matchups have been saved to all_matches.csv
+        * Probabilities of all matchups have been saved to all_matches.csv\n
         '''
         tex.insert(tk.END, finishtext)
         tex.see(tk.END)             # Scroll if necessary
         top.update_idletasks()
 
 if __name__ == "__main__":
+    # GUI code
+    # http://stackoverflow.com/questions/14879916/python-tkinter-make-any-output-appear-in-a-text-box-on-gui-not-in-the-shell
+
+    top = tk.Tk()
+    top.resizable(width='FALSE', height='FALSE')
+    top.wm_title("ncaasim")
+    tex = tk.Text(master=top)
+    tex.pack(side=tk.RIGHT)
+    bop = tk.Frame()
+    bop.pack(side=tk.LEFT)
     main()
+
+
 
