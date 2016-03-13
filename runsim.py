@@ -6,7 +6,7 @@ import sys
 import itertools
 import tkinter as tk
 '''
-This program is free software; you can redistribute it and/or modify
+ncaasim is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 '''
+
 
 class Team:
     def __init__(self, name, predictors, known_wins):
@@ -36,7 +37,10 @@ class Team:
     def __str__(self):
         return self.name
 
-class safe: # the decorator
+
+# Error handling decorator
+# http://stackoverflow.com/questions/6666882/tkinter-python-catching-exceptions
+class safe:
     def __init__(self, function):
         self.function = function
 
@@ -47,7 +51,7 @@ class safe: # the decorator
             # make a popup here with your exception information.
             # might want to use traceback module to parse the exception info
             friendly_error = '''
-        Oops! Program encountered the following error:
+        Warning - there were some errors:
             '''
             friendly_error += str(e)
             friendly_error += '''
@@ -61,6 +65,7 @@ class safe: # the decorator
             tex.insert(tk.END, friendly_error)
             tex.see(tk.END)             # Scroll if necessary
             top.update_idletasks()
+
 
 class Match:
 
@@ -115,13 +120,16 @@ class Match:
         return "Match: "+self.team1.name+" vs. "+self.team2.name+"\nProbability former team wins is " + \
             str(self.probability_team_one_wins) + "\nWinner is: " + str(self.winner)+"\n"
 
+
 def cbc(tex, newtext):
     return lambda : callback(tex, newtext)
+
 
 def callback(tex, newtext):
 
     tex.insert(tk.END, newtext)
     tex.see(tk.END)             # Scroll if necessary
+
 
 def main():
 
@@ -371,26 +379,72 @@ def runcalcs(tex, top):
             writer.writerow(["First team", "Second team", "Probability First Team Wins"])
             for match in all_matches:
                 writer.writerow([match.team1, match.team2, match.probability_team_one_wins])
+        kaggle_generated = True
+        try:
+            with open('Teams.csv', 'r') as teamfile:
+                teamfile_reader = csv.reader(teamfile, delimiter=',', quotechar='|')
+                # Skip header row
+                next(teamfile_reader)
+                # Read teams into dictionary, using name as key and id as value
+                team_ids_dict = {}
+                while True:
+                    try:
+                        team_row = next(teamfile_reader)
+                    except StopIteration:
+                        break
+                    team_ids_dict[team_row[1]] = team_row[0]
+                # Now create the output file
+                with open('kaggle_output.csv', "w", newline='') as kaggle_file:
+                    writer = csv.writer(kaggle_file, delimiter=',')
+                    writer.writerow(["id","pred"])
+                    team_not_found_err = '''
+            I tried to generate Kaggle output, but team
+            %s was not listed in Teams.csv, so I could not
+            find the team ID. Feel free to ignore this if you do
+            not want Kaggle output.
+                            '''
+                    print(team_ids_dict)
+                    for match in all_matches:
 
-        '''
-        # Print results for each team
-        for match in matches:
-            print(match)
-        for team in teams:
-            print(team)
+                        if str(match.team1) not in team_ids_dict:
 
-            print("Winning round 1:\t"+str(team.num_round1_wins/num_runs))
-            print("Winning round 2:\t"+str(team.num_round2_wins/num_runs))
-            print("Winning round 3:\t"+str(team.num_round3_wins/num_runs))
-            print("Winning round 4:\t"+str(team.num_round4_wins/num_runs))
-            print("Winning round 5:\t"+str(team.num_round5_wins/num_runs))
-            print("Winning Championship:\t"+str(team.num_championship_wins/num_runs))
+
+                            raise LookupError(team_not_found_err % match.team1)
+                            break
+                        if str(match.team2) not in team_ids_dict:
+                            raise LookupError(team_not_found_err % match.team2)
+                            break
+
+                        team1_id = team_ids_dict[str(match.team1)]
+
+
+                        team2_id = team_ids_dict[str(match.team2)]
+                        if(int(team1_id) > int(team2_id)):
+                            writer.writerow(["2016_"+team2_id+"_"+team1_id,str(1-match.probability_team_one_wins)])
+                        else:
+                            writer.writerow(["2016_"+team1_id+"_"+team2_id,str(match.probability_team_one_wins)])
+        except (EnvironmentError, LookupError) as error:
+            kaggle_generated = False
+            finishtext = '''
+        Warning: Unable to generate Kaggle output.
+        %s
         '''
+            tex.insert(tk.END, finishtext % error)
+            tex.see(tk.END)             # Scroll if necessary
+            top.update_idletasks()
+            pass
+
         finishtext = '''
         Finished!
         * Probabilities of progression have been saved to out.csv
-        * Probabilities of all matchups have been saved to all_matches.csv\n
-        '''
+        * Probabilities of all matchups have been saved to all_matches.csv'''
+        if kaggle_generated:
+            finishtext += '''
+        * Kaggle submission file saved to kaggle_output.csv'''
+        else:
+            finishtext += '''
+        * Kaggle submission file NOT generated due to errors.'''
+            os.remove('kaggle_output.csv')
         tex.insert(tk.END, finishtext)
         tex.see(tk.END)             # Scroll if necessary
         top.update_idletasks()
