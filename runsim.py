@@ -3,6 +3,7 @@ import csv
 import math
 import random
 import sys
+import os
 import itertools
 import tkinter as tk
 '''
@@ -395,7 +396,7 @@ def runcalcs(tex, top):
                         team_row = next(teamfile_reader)
                     except StopIteration:
                         break
-                    team_ids_dict[team_row[1]] = team_row[0]
+                    team_ids_dict[team_row[1].lower()] = team_row[0]
                 # Now create the output file
                 with open('kaggle_output.csv', "w", newline='') as kaggle_file:
                     writer = csv.writer(kaggle_file, delimiter=',')
@@ -409,17 +410,17 @@ def runcalcs(tex, top):
                     print(team_ids_dict)
                     for match in all_matches:
 
-                        if str(match.team1) not in team_ids_dict:
+                        if str(match.team1).lower() not in team_ids_dict:
 
 
                             raise LookupError(team_not_found_err % match.team1)
                             break
-                        if str(match.team2) not in team_ids_dict:
+                        if str(match.team2).lower() not in team_ids_dict:
                             raise LookupError(team_not_found_err % match.team2)
                             break
 
-                        team1_id = team_ids_dict[str(match.team1)]
-                        team2_id = team_ids_dict[str(match.team2)]
+                        team1_id = team_ids_dict[str(match.team1).lower()]
+                        team2_id = team_ids_dict[str(match.team2).lower()]
                         if int(team1_id) > int(team2_id):
                             writer.writerow([str(tournament_year)+"_"+team2_id+"_"+team1_id,str(1-match.probability_team_one_wins)])
                         else:
