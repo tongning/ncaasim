@@ -51,7 +51,7 @@ class safe:
             # make a popup here with your exception information.
             # might want to use traceback module to parse the exception info
             friendly_error = '''
-        Warning - there were some errors:
+        Warning - program encountered errors:
             '''
             friendly_error += str(e)
             friendly_error += '''
