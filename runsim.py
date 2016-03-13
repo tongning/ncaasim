@@ -179,6 +179,9 @@ def runcalcs(tex, top):
     with open('settings.csv', 'r') as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 
+        year_row = next(csv_reader)
+        tournament_year = int(year_row[1])
+
         num_runs_row = next(csv_reader)
         num_runs = int(num_runs_row[1])
 
@@ -416,13 +419,11 @@ def runcalcs(tex, top):
                             break
 
                         team1_id = team_ids_dict[str(match.team1)]
-
-
                         team2_id = team_ids_dict[str(match.team2)]
-                        if(int(team1_id) > int(team2_id)):
-                            writer.writerow(["2016_"+team2_id+"_"+team1_id,str(1-match.probability_team_one_wins)])
+                        if int(team1_id) > int(team2_id):
+                            writer.writerow([str(tournament_year)+"_"+team2_id+"_"+team1_id,str(1-match.probability_team_one_wins)])
                         else:
-                            writer.writerow(["2016_"+team1_id+"_"+team2_id,str(match.probability_team_one_wins)])
+                            writer.writerow([str(tournament_year)+"_"+team1_id+"_"+team2_id,str(match.probability_team_one_wins)])
         except (EnvironmentError, LookupError) as error:
             kaggle_generated = False
             finishtext = '''
