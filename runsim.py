@@ -53,7 +53,21 @@ class Match:
             exponent = 0
             exponent += constant
             for idx in range(num_predictors):
-                exponent += predictor_coefficients[idx] * predictor_differences[idx]
+                # If predictor is continuous
+
+                if type(predictor_coefficients[idx]) is not dict:
+                    exponent += predictor_coefficients[idx] * predictor_differences[idx]
+                else: # Predictor is categorical
+                    difference_string = str(predictor_differences[idx])
+                    if difference_string == "0.0":
+                        difference_string = "0"
+                    else:
+                        difference_string = difference_string.rstrip('.0')
+
+                    exponent += predictor_coefficients[idx][difference_string]
+
+
+
             odds_team1_wins = math.e ** exponent
             self.probability_team_one_wins = odds_team1_wins / (1.0 + odds_team1_wins)
 
@@ -155,7 +169,27 @@ def runcalcs(tex, top):
 
         for i in range(num_predictors):
             predictor_coefficient_row = next(csv_reader)
-            predictor_coefficients.append(float(predictor_coefficient_row[1]))
+            if "categorical!" not in predictor_coefficient_row[0].lower():
+
+                predictor_coefficients.append(float(predictor_coefficient_row[1]))
+            else:
+                # Pass a dictionary defining the proper constant to add to y-hat for each possible difference, rather
+                # than a coefficient to multiply the difference by
+            
+                level_diff_dict = {}
+                # Read horizontally in column until no more level-constant pairs can be found
+                col_index = 1
+                while True:
+                    try:
+                        level_diff = str(predictor_coefficient_row[col_index])
+                        level_diff_constant = float(predictor_coefficient_row[col_index + 1])
+                        # Add pair to the dictionary
+                        level_diff_dict[level_diff] = level_diff_constant
+                        col_index += 2
+                    except IndexError:
+                        break
+
+                predictor_coefficients.append(level_diff_dict)
 
         # Skip a heading row
         next(csv_reader)
@@ -348,6 +382,3 @@ def runcalcs(tex, top):
 if __name__ == "__main__":
     main()
 
-    #constant = 0
-    #num_predictors = 0
-    #predictor_coefficients = []
