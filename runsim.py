@@ -5,6 +5,7 @@ import random
 import sys
 import os
 import itertools
+import traceback
 import tkinter as tk
 '''
 ncaasim is free software; you can redistribute it and/or modify
@@ -55,6 +56,7 @@ class safe:
         Warning - program encountered errors:
             '''
             friendly_error += str(e)
+            friendly_error += str(traceback.print_exc())
             friendly_error += '''
 
         Troubleshooting tips:
@@ -194,7 +196,7 @@ def runcalcs(tex, top):
 
         constant_row = next(csv_reader)
         constant = float(constant_row[1])
-
+        print("constant is "+str(constant))
         for i in range(num_predictors):
             predictor_coefficient_row = next(csv_reader)
             if "categorical!" not in predictor_coefficient_row[0].lower():
@@ -235,12 +237,16 @@ def runcalcs(tex, top):
                 continue
 
             team_name = team_row[1]
+            print(team_name)
             team_known_wins = int(team_row[2])
             team_predictor_values = []
             column_num = 3
-            while team_row[column_num] != '':
-                team_predictor_values.append(float(team_row[column_num]))
-                column_num += 1
+            try:
+                while team_row[column_num] != '':
+                    team_predictor_values.append(float(team_row[column_num]))
+                    column_num += 1
+            except (IndexError, ValueError):
+                pass
 
             new_team = Team(team_name, team_predictor_values, team_known_wins)
             if not finished_bracket_teams:
