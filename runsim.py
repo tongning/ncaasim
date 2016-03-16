@@ -199,6 +199,7 @@ def runcalcs(tex, top):
         print("constant is "+str(constant))
         for i in range(num_predictors):
             predictor_coefficient_row = next(csv_reader)
+            print(predictor_coefficient_row)
             if "categorical!" not in predictor_coefficient_row[0].lower():
 
                 predictor_coefficients.append(float(predictor_coefficient_row[1]))
@@ -221,18 +222,21 @@ def runcalcs(tex, top):
 
                 predictor_coefficients.append(level_diff_dict)
 
+
         # Skip a heading row
         next(csv_reader)
 
         # Create team objects
         finished_bracket_teams = False
         while True:
+
             try:
                 team_row = next(csv_reader)
+
             except StopIteration:
                 break
-
-            if team_row[0] == 'Not on bracket':
+            print(team_row)
+            if 'not on bracket' in team_row[0].lower() or team_row[1] == '':
                 finished_bracket_teams = True
                 continue
 
@@ -265,15 +269,6 @@ def runcalcs(tex, top):
             input()
             sys.exit()
 
-        # Error check
-        # Make sure number of teams in the spreadsheet matches "Round of" value
-        if len(teams) != round_of:
-            print("Error: Are you sure this is a round of "+str(round_of)+"?")
-            print("You've listed "+str(len(teams))+" teams in the CSV.")
-            print("Please double-check your CSV and relaunch this program.")
-            print("RUN FAILED - INPUT ERROR")
-            input()
-            sys.exit()
 
         for j in range(num_runs):
             # Run through first round matches, # 0-31
