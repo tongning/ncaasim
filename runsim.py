@@ -56,7 +56,7 @@ class safe:
         Warning - program encountered errors:
             '''
             friendly_error += str(e)
-            friendly_error += str(traceback.print_exc())
+            friendly_error += "\n\t\t" + str(sys.exc_info()[0])
             friendly_error += '''
 
         Troubleshooting tips:
@@ -270,7 +270,9 @@ def runcalcs(tex, top):
             sys.exit()
 
 
-        for j in range(num_runs):
+
+        for index, j in enumerate(range(num_runs)):
+
             # Run through first round matches, # 0-31
             team1_idx = 0
             team2_idx = 1
@@ -278,6 +280,9 @@ def runcalcs(tex, top):
             while team2_idx < len(teams):
                 # Does either team already have 1 or more wins so far?
                 # If so, they've already won round 1 match; force winner
+                if index == 0:
+                    tex.insert(tk.END, "\t"+ str(teams[team1_idx]) + " vs. " + str(teams[team2_idx]) + "\n")
+
 
                 if teams[team1_idx].known_wins >= 1:  # We already know team 1 won this
                     matches[match_num] = Match(teams[team1_idx], teams[team2_idx], teams[team1_idx])
@@ -291,9 +296,12 @@ def runcalcs(tex, top):
                 team1_idx += 2
                 team2_idx += 2
                 match_num += 1
-
+            if index == 0:
+                tex.insert(tk.END, "\n\t"+ "Running...Please be patient; program may "
+                                           "appear to hang.\n")
             # Run through second round matches, # 32-47
-
+            tex.see(tk.END)             # Scroll if necessary
+            top.update_idletasks()
             for idx in range(32, 48):
                 # Does either team already have 2 or more wins so far?
                 # If so, they've already won round 2 match; force winner
@@ -439,6 +447,11 @@ def runcalcs(tex, top):
 
         finishtext = '''
         Finished!
+
+        To verify that you've listed the teams in the correct order,
+        the first-round matches are listed above. Make sure these
+        are correct!!
+
         * Probabilities of progression have been saved to out.csv
         * Probabilities of all matchups have been saved to all_matches.csv'''
         if kaggle_generated:
